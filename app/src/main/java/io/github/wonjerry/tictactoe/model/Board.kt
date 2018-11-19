@@ -7,18 +7,15 @@ class Board {
     const val COL = 3
   }
 
-  val cells = createCells()
-  var currentPlayer = Player.O
-  var winner: Player? = null
+  private val cells = createCells()
+  private var currentPlayer = Player.O
+
 
   private fun createCells(): List<Cell> {
     var cells = mutableListOf<Cell>()
-    for (i in 0..(ROW - 1)) {
-      for (j in 0..(COL - 1)) {
-        cells.add(Cell(i, j))
-      }
+    for (i in 0..(ROW * COL - 1)) {
+        cells.add(Cell())
     }
-
     return cells
   }
 
@@ -26,32 +23,34 @@ class Board {
     return cells[row * ROW + col]
   }
 
-  private fun clear() {
-    cells.map { it.player = null }
+  fun getCurrentPlayer(): String {
+    return currentPlayer.toString()
   }
 
-  fun restart() {
-    clear()
+  fun clear() {
     currentPlayer = Player.O
-    winner = null
+    cells.forEach { it.player = null }
   }
 
   fun markCell(row: Int, col: Int) {
     getCell(row, col).player = currentPlayer
   }
 
-  fun isValid(row: Int, col: Int): Boolean {
-    return getCell(row, col).player == null && winner == null
+  fun isAlreadyMarked(row: Int, col: Int): Boolean {
+    return getCell(row, col).player != null
   }
 
-  fun checkWinner(): Player? {
+  fun isAllCellsFilled(): Boolean {
+    return cells.all { it.player != null }
+  }
+
+  fun getWinner(): Player? {
     // Check row
     for (i in 1..ROW) {
       if (cells
               .filterIndexed { index, _ -> index < i * COL }
               .all { it.player == currentPlayer }) {
-        winner = currentPlayer
-        return winner
+        return currentPlayer
       }
     }
 
@@ -60,8 +59,7 @@ class Board {
       if (cells
               .filterIndexed { index, _ -> index % ROW == i }
               .all { it.player == currentPlayer }) {
-        winner = currentPlayer
-        return winner
+        return currentPlayer
       }
     }
 
@@ -71,8 +69,7 @@ class Board {
         getCell(1, 1).player == currentPlayer &&
         getCell(2, 2).player == currentPlayer
     ) {
-      winner = currentPlayer
-      return winner
+      return currentPlayer
     }
 
     // Check left down diagonal
@@ -81,23 +78,16 @@ class Board {
         getCell(1, 1).player == currentPlayer &&
         getCell(2, 0).player == currentPlayer
     ) {
-      winner = currentPlayer
-      return winner
+      return currentPlayer
     }
 
-    // Check draw
-    if (cells.all { it.player != null }) {
-      winner = Player.DRAW
-    }
-
-    return winner
+    return null
   }
 
   fun flipPlayer() {
     currentPlayer = when (currentPlayer) {
       Player.O -> Player.X
       Player.X -> Player.O
-      else -> Player.O
     }
   }
 

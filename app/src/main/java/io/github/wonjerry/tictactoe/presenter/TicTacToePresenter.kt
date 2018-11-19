@@ -4,27 +4,50 @@ import io.github.wonjerry.tictactoe.model.Board
 import io.github.wonjerry.tictactoe.view.TicTacToeView
 
 class TicTacToePresenter(view: TicTacToeView) {
+  private enum class GameState {
+    IN_PROGRESS, FINISHED
+  }
+
   private val model = Board()
   private val view = view
+  private var gameState: GameState = GameState.IN_PROGRESS
+
+  private fun restartGame() {
+    gameState = GameState.IN_PROGRESS
+    model.clear()
+    view.showWinner("")
+    view.clearButtons(Board.ROW, Board.COL)
+  }
+
+  private fun isClickable(row: Int, col: Int): Boolean {
+    return !model.isAlreadyMarked(row, col) && gameState == GameState.IN_PROGRESS
+  }
 
   fun onTicTacToeButtonClicked(row: Int, col: Int) {
-    if (!model.isValid(row, col)) {
+    if (isClickable(col, row)) {
       return
     }
 
     model.markCell(row, col)
-    view.setButtonText(row, col, model.currentPlayer.toString())
-    model.checkWinner()?.let {
-      with(model) {
+    view.setButtonText(row, col, model.getCurrentPlayer())
+
+    val winner = model.getWinner()
+
+    when {
+      winner != null -> {
+        gameState = GameState.FINISHED
         view.showWinner(winner.toString())
       }
+      model.isAllCellsFilled() -> {
+        gameState = GameState.FINISHED
+        view.showWinner("Draw")
+      }
+      else -> model.flipPlayer()
     }
-    model.flipPlayer()
   }
 
-  fun onResetClicked() {
-    model.restart()
-    view.showWinner("")
-    view.clearButtons(Board.ROW, Board.COL)
+  fun onResetClicked(): Boolean {
+    restartGame()
+    return true
   }
 }

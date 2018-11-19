@@ -6,30 +6,40 @@ import android.util.Log
 import android.view.*
 import io.github.wonjerry.tictactoe.R
 import io.github.wonjerry.tictactoe.presenter.TicTacToePresenter
-import android.widget.TextView
+import kotlinx.android.synthetic.main.tictactoe_view.*
 import android.widget.Button
 
 
 class TicTacToeActivity : AppCompatActivity(), TicTacToeView {
 
-  private var buttonGrid: ViewGroup? = null
-  private var winnerPlayerViewGroup: View? = null
-  private var winnerPlayerLabel: TextView? = null
-  private var winnerText: TextView? = null
   private val presenter = TicTacToePresenter(this)
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.tictactoe_view)
+  }
 
-    buttonGrid = findViewById(R.id.buttonGrid)
-    winnerPlayerViewGroup = findViewById(R.id.winnerViewGroup)
-    winnerPlayerLabel = findViewById(R.id.winnerPlayer)
-    winnerText = findViewById(R.id.winnerText)
+  override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    val inflater = menuInflater
+    inflater.inflate(R.menu.tictactoe_menu, menu)
+    return true
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+    R.id.action_reset -> presenter.onResetClicked()
+    else -> super.onOptionsItemSelected(item)
+  }
+
+  override fun showWinner(winner: String) {
+    winnerPlayer.text = winner
+    when (winner) {
+      "", "Draw" -> winnerText.visibility = View.INVISIBLE
+      else -> winnerText.visibility = View.VISIBLE
+    }
   }
 
   override fun clearWinnerDisplay() {
-    winnerPlayerLabel?.text = ""
+    winnerPlayer.text = ""
   }
 
   override fun clearButtons(rows: Int, cols: Int) {
@@ -41,16 +51,8 @@ class TicTacToeActivity : AppCompatActivity(), TicTacToeView {
   }
 
   override fun setButtonText(row: Int, col: Int, mark: String) {
-    buttonGrid?.findViewWithTag<Button>("$row$col")?.run {
+    buttonGrid.findViewWithTag<Button>("$row$col").run {
       text = mark
-    }
-  }
-
-  override fun showWinner(winner: String) {
-    winnerPlayerLabel?.text = winner
-    when (winner) {
-      "", "DRAW" -> winnerText?.visibility = View.INVISIBLE
-      else -> winnerText?.visibility = View.VISIBLE
     }
   }
 
@@ -63,21 +65,4 @@ class TicTacToeActivity : AppCompatActivity(), TicTacToeView {
 
     presenter.onTicTacToeButtonClicked(row, col)
   }
-
-  override fun onCreateOptionsMenu(menu: Menu): Boolean {
-    val inflater = menuInflater
-    inflater.inflate(R.menu.tictactoe_menu, menu)
-    return true
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return when (item.itemId) {
-      R.id.action_reset -> {
-        presenter.onResetClicked()
-        return true
-      }
-      else -> return super.onOptionsItemSelected(item)
-    }
-  }
-
 }
